@@ -1,0 +1,149 @@
+<apex:page controller="RepairCyclePDFController" renderAs="PDF" standardStylesheets="false" applyHtmlTag="false" showHeader="false">
+    <head><!--
+            /*size: A3 landscape; 
+                font-size: 21px; */-->
+        <style>
+            @page {
+            	size:420.0cm 280.0cm;
+                margin-top: 0.1cm;
+                margin-left: 0.2cm;
+                margin-right: 0.2cm;
+                margin-bottom: 0.8cm;
+            }
+
+            .page-break {
+                display: block;
+                page-break-after: always;
+            }
+
+            body {
+                font-family: Arial Unicode MS;
+            }
+
+            @page {
+                @bottom-right {
+                    content: element(footer);
+                }
+            }
+
+            div.footer {
+                display: block;
+                font-size: 50px;
+                padding-bottom:50px;
+                position: running(footer);
+            }
+
+            .pagenumber:before {
+                content: counter(page);
+            }
+
+            .pagecount:before {
+                content: counter(pages);
+            }
+        </style>
+    </head>
+    <body>
+        <apex:variable var="countall" value="{!0}"/>
+        <apex:repeat value="{!repeatList}" var="repitem">
+            <apex:variable value="{!countall+1}" var="countall"/>
+            <div style="{!if(countall==1,'page-break-before: avoid;','page-break-before: always;margin-top:5px;')}">
+                <div style="font-size:50px;margin-left:15300px;">{!printTime}</div>
+                <div style="border: 0px solid black;height: 30px;width: 630px;text-align: left;font-size: 30px;line-height: 31px;">  
+                </div>
+    
+                <div style="height: 10px;"></div>
+                <!--<table  style="width: 630px;height:+{!IF(countall > 1,'120px;','260px;')}" cellpadding="0" cellspacing="0">-->
+			     <span  style="font-size: 100px; ">■長期修繕計画表{!propertyName}</span>
+                <table  class="slds-table  slds-table_bordered"  style="table-layout: fixed;width:15800px;border-top: black solid 4px;border-left: black solid 4px;border-right: black solid 4px;border-bottom: black solid 2px;">
+                    <thead style=" border-top: black solid 4px;border-left: black solid 4px;border-right: black solid 4px;border-bottom: black solid 2px;">
+                	<!--<table style="width:100%;height:100%;border-top: black solid 1px;border-left: black solid 1px;border-right: black solid 1px;border-bottom: black solid 0.5px;" cellpadding="0" cellspacing="0" >-->  
+	                  	<!--<apex:outputText rendered="{!countall==1 }">-->
+	                        <tr >
+	                            <td style="width:11%;height:80px;border-top: black solid 2px;border-right: black solid 2px;border-bottom: 
+                                           black solid 1px;background-color: 	#DCDCDC;font-size: 80px;" rowspan="2">
+	                                修繕工事項目
+	                            </td>
+	                            <td style="width:100px;height:80px;text-align:center;border-top: black solid 2px;border-left: black solid 2px;border-right: black solid 2px;border-bottom: black solid 1px;background-color: #DCDCDC;font-size: 80px;" rowspan="2">
+	                                周<br/>期</td>
+	                            <!--<td style="width: 1%;height:50px;text-align:center;border-top: black solid 2px;border-left: black solid 2px;border-right: black solid 2px;;border-bottom: black solid 1px;background-color: #DCDCDC;font-size: 70px;">西暦</td>-->
+	                            <apex:variable var="idx" value="{!1}"/>
+	                            <apex:repeat value="{!completionYearList}" var="itemY">
+	                                <td style="width: 1%;height:50px;text-align:center;border-top: black solid 2px;border-left: black solid 2px;border-right: black solid 2px;border-bottom: black solid 1px;background-color: #DCDCDC;font-size: 55px;">
+	                                    {!completionYear + idx}</td>
+	                                <apex:variable var="idx" value="{!idx + 1}" />
+	                            </apex:repeat>
+	                            <td style="width: 2%;height:50px;text-align:right;border-top: black solid 2px;border-left: black solid 2px;border-right: black solid 2px;border-bottom: black solid 1px;background-color: #DCDCDC;font-size: 80px;" rowspan="2">合計</td>
+	                        </tr>
+	                        <tr >
+	                       <!--     <td  style="width: 1%;height:50px;text-align:center;border-top: black solid 2px;border-left: black solid 2px;border-right: black solid 2px;border-bottom: black solid 1px;background-color: #DCDCDC;font-size: 70px;">
+	                                経年</td>  -->
+	                            <apex:repeat value="{!completionYearList}" var="itemC">
+	                                <td style="width:1%;height:50px;text-align:center;border-top: black solid 2px;border-left: black solid 2px;border-right: black solid 2px;border-bottom: black solid 1px;background-color: 	#DCDCDC;font-size: 80px;">
+	                                    {!itemC}</td>
+	                            </apex:repeat>
+	                        </tr>
+	                    <!--</apex:outputText>-->
+                    </thead>
+                            
+                    <tbody style=" border-top: black solid 4px;border-left: black solid 4px;border-right: black solid 4px;border-bottom: black solid 4px;">
+                    
+                       <!-- 最大行数240行のテストため
+						<apex:repeat value="{!completionYearList}" var="itemC">
+                            <tr >
+                                <td style="width: 13%;height:80px;black solid 2px;border-right: black solid 2px;border-bottom: 
+                                           black solid 1px;background-color:#ccffcc;font-size: 80px;" 
+                                    rowspan="2" colspan="64"> 1ダミーデータ{!itemC}
+                                </td>
+                            
+                            </tr>
+                        </apex:repeat>
+                    
+                       
+						<apex:repeat value="{!completionYearList}" var="itemC">
+                            <tr >
+                                <td style="width: 13%;height:80px;black solid 2px;border-right: black solid 2px;border-bottom: 
+                                           black solid 1px;background-color:#ccffcc;font-size: 80px;" 
+                                    rowspan="2" colspan="64"> 2ダミーデータ{!itemC}
+                                </td>
+                            
+                            </tr>
+                        </apex:repeat>
+                    
+                       
+						<apex:repeat value="{!completionYearList}" var="itemC">
+                            <tr >
+                                <td style="width: 13%;height:80px;black solid 2px;border-right: black solid 2px;border-bottom: 
+                                           black solid 1px;background-color:#ccffcc;font-size: 80px;" 
+                                    rowspan="2" colspan="64">3ダミーデータ{!itemC}
+                                </td>
+                            
+                            </tr>
+                        </apex:repeat> -->
+	                    <apex:repeat value="{!repitem.subRepeatList}" var="koujiItem">
+	                        <tr >
+	                            <!--分類① -->
+	                            <apex:outputText rendered="{!koujiItem.class1 != null || koujiItem.class1 != '' }">
+	                                <td style="width: 11%;height:80px;black solid 2px;border-right: black solid 2px;border-bottom: 
+                                           black solid 1px;background-color:#ccffcc;font-size: 80px;" 
+	                                    rowspan="2" colspan="63">
+	                                    {!koujiItem.class1}
+	                                </td>
+	                        	</apex:outputText>
+	                        
+	                            <!--工事行リスト-->
+	                            <apex:outputText rendered="{!koujiItem.koujiList != null && koujiItem.koujiList != ''}">
+	                                    <apex:repeat value="{!koujiItem.koujiList}" var="itemK">
+	                                        <apex:outputText value="{!itemK}" escape="false"/>
+	                                    </apex:repeat>
+	                           </apex:outputText>
+	                        </tr>                        
+	                    </apex:repeat>
+                    </tbody>
+                </table>
+              	<div style="margin-left:15600px;font-size:70px;margin-bottom:10px;">
+	            	{!countall}/{!repeatList.size}
+           		</div>
+            </div>
+        </apex:repeat>
+    </body>
+</apex:page>

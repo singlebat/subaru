@@ -1,0 +1,276 @@
+<apex:page controller="YojituController"  docType="html-5.0"  showHeader="true" sidebar="true"  id="Page">
+    <head>
+        <apex:stylesheet value="{!$Resource.jquery_mmenu_css}"/>
+        <apex:stylesheet value="{!$Resource.animate_css}"/>
+        <apex:styleSheet value="{!$Resource.status_slider_popup_css}"/>      
+ 		<!-- Import the Design System style sheet -->
+      	<apex:slds />
+        <!--<script src="https://code.jquery.com/jquery-1.11.1.js"></script>         
+        <script src="{!URLFOR($Resource.jquery_mmenu_min_js)}"></script>-->
+        <script src="{!URLFOR($Resource.knob_js)}"></script>
+        <script src="{!URLFOR($Resource.jquery_layout_js)}"></script>
+        <script src="{!URLFOR($Resource.FixTableHeader)}"></script>
+        
+        <!--<script src="{!URLFOR($Resource.fakeLoader)}"></script>
+        <script src="{!URLFOR($Resource.fakeLoaderCss)}"></script>
+        <script src="{!URLFOR($Resource.toastrJs)}"></script>
+        <script src="{!URLFOR($Resource.toastrCss)}"></script>-->
+        <apex:stylesheet value="{!URLFOR($Resource.resource ,'/css/bootstrap.css')}" />
+	    <apex:includeScript value="{!$Resource.resource + '/js/jquery.min.js'}"/>
+	    <apex:includeScript value="{!$Resource.resource + '/js/numCheck.js'}"/>
+	    <apex:includeScript value="{!$Resource.resource + '/js/bootstrap.min.js'}"/>
+	    <apex:includeScript value="{!$Resource.resource + '/js/jqPaginator.js'}"/>
+        <apex:stylesheet value="{!URLFOR($Resource.resource ,'/toastr/toastr.min.css')}" />
+	    <apex:includeScript value="{!$Resource.resource + '/toastr/toastr.min.js'}"/>
+	    <apex:stylesheet value="{!URLFOR($Resource.resource ,'/fakeloading/fakeLoader.css')}" />
+	    <apex:includeScript value="{!$Resource.resource + '/fakeloading/fakeLoader.min.js'}"/>
+	    <style type="text/css">
+	        #vf-page .linkBtn { 
+	            -webkit-border-radius: 5px; 
+	            -moz-border-radius: 5px; 
+	            border-radius: 5px;
+	            border: solid 1px #2A94D6;
+	            padding: 5px 20px;
+	            font-weight: bold;
+	            color: white !important;
+	            background-color: black;
+	            text-decoration: none;
+	            margin-left: 10px;
+	            display: inline-block;
+           	    background:#5ab4bd;
+	        }
+	        #vf-page .linkBtn:hover {
+	            opacity: 0.7;
+	        }
+            html {
+                height: 100%
+            }
+            
+            body {
+                font-family: "ProximaNovaSoft-Regular", "ITCOfficinaSerifBookRegular", "Calibri", "Helvetica", "Arial", "sans-serif";
+                height: 100%;
+            }
+    
+           .myClass{
+			color:white !important;
+			background:#00CC00 !important;
+			}
+           
+            .header {
+                background-color: #1797c0; 
+                width: 100%; 
+                height: 50px; 
+                min-height: 50px;
+                overflow: none!important;
+            }
+            
+            .header #title {
+                text-align: center; 
+                color: white;
+                font-size: 15px;        
+            }
+			.hide{
+				display:none;
+			}
+			.dateFormat{
+				visibility:hidden;
+			}
+        </style>
+        <script type='text/javascript'>
+            $(document).ready(function() {
+                var prentWidth = $(window).width();
+                $("#tabDivId").css('max-width', (prentWidth - 70) + 'px').height($(window).height()/7*5);
+                $("#fixTable").tableHeadFixer();
+                $("#fixTable").tableHeadFixer(); 
+            });
+            function doSize(){
+             	var prentWidth = $(window).width();
+                $("#tabDivId").css('max-width', (prentWidth - 70) + 'px').height($(window).height()/7*5);
+                $("#fixTable").tableHeadFixer(); 
+                $("#fixTable").tableHeadFixer({'left' : 2});
+              
+            }
+            function docheck(){
+            	// 物件             
+              	var bukenn = document.getElementById('Page:frmId:bukenn').value;
+            	// 対象年月(From)             
+              	var FromDate = document.getElementById('Page:frmId:dateFrom').value;
+              	// 対象年月(To)              
+             	var ToDate = document.getElementById('Page:frmId:dateTo').value;        
+             	if(bukenn==null || bukenn==''){
+                  alert('物件を指定してください。 ');
+                  return;
+              	}       
+             	if(FromDate==null || FromDate==''){
+                  alert('対象年月(From) を指定してください。 ');
+                  return;
+              	}
+              	if(ToDate==null || ToDate==''){
+                  alert('対象年月(To) を指定してください。 ');
+                  return;
+              	}
+	            // 対象年月(From)と対象年月(To)の不正の判定
+	            if(FromDate!=null && ToDate!=null && FromDate> ToDate ){
+	                  alert('対象年月(From)と対象年月(To)が大小不正です。 ');
+	                  return;
+	            }
+                //年*12+月
+                var m1 = parseInt(FromDate.split("/")[1].replace(/^0+/, "")) + parseInt(FromDate.split("/")[0]) * 12;
+                var m2 = parseInt(ToDate.split("/")[1].replace(/^0+/, "")) + parseInt(ToDate.split("/")[0]) * 12;
+            	if(m2-m1>60){
+	                  alert('対象年月（From-To）が5年を超える範囲は選択できません。');
+	                  return;
+	            }
+	            
+	            doSearch();
+	            openLoading();
+            }
+		</script>
+   	</head>
+	<body id="vf-body">
+	<div class="fakeloader"></div>
+      <apex:form id="frmId">
+     	<div id="vf-page" style="z-index:-1;">
+	    	<apex:outputPanel id="pageContent" style="height: 100%; width: 100%">
+		        <div>
+		        	<table class="slds-table slds-table_cell-buffer slds-table_bordered">
+			        	<tr class="slds-hint-parent">
+			        	    <td style="text-align:right;font-size: 14px;width:40px;font-weight: bold">対象:</td>
+			        	    <td style="text-align:left;width:80px;"> 
+			        	    	<apex:selectList value="{!taisyous}" multiselect="false" size="1"  style="margin-left: 0px; width:80px;height:22px;">
+			            			 	<apex:selectOptions Value="{!kinds}"/>
+			        			</apex:selectList>
+			        		</td>
+			        		 <td style="text-align:right;width:40px;font-size: 14px;font-weight: bold">対象物件:</td>
+			        	     <td style="text-align:left;width:250px;">
+			        	     	<apex:inputField id="bukenn" value="{!cusOpportunity.PropatyDisplay__c}"  style="margin-left: 0px; width:80%;height:22px;"/>
+			        	     </td>
+			        	     <td style="text-align:right;width:80px;font-size: 14px;font-weight: bold">対象年月:</td>
+			        	     <td style="text-align:left;width:340px;font-size: 14px">
+                                   	<div style="margin-top:0px;">
+                                		<apex:inputField id="dateFrom" label="From"  value="{!cusOpportunity.Sdate__c}"  
+		        	     				  styleClass="" style=" width:120px;height:22px;" showdatePicker="true" /> 
+                                   	</div>
+                                   	<div style="margin-left:130px;margin-top:-20px;">
+                                   		～
+                                   	</div>
+				        	     	<div style="margin-left:50px;margin-top:-23px;">                            
+	                                    <apex:inputField id="dateTo" label="To" value="{!cusOpportunity.Edate__c}" 
+	                                                styleClass="" style=" margin-left: 100px;width:120px;height:22px;" showdatePicker="true"/>
+				        	     	</div>
+			        	     </td>
+                            <td>
+								<apex:commandButton id="cmd" styleClass="slds-button slds-button_inverse" onClick="docheck();return false;" value="検索" 
+      							style="font-weight: bold;background:#1797C0;font-color:#ffffff; color: white !important;"/>
+                            </td>
+			        	</tr>
+		        	</table>
+		        </div>
+	        </apex:outputPanel>
+	        <apex:outputPanel rendered="{!if(or(errorMsg=null,errorMsg=''),false,true)}" layout="none"> 
+	        	<div style="margin-top:10px;margin-left:30px;color:red;font-size:15px;">
+	        		{!errorMsg}
+	        	</div>
+	        </apex:outputPanel>
+	        
+
+            <div style="margin-top:20px;"/>
+            <apex:outputPanel rendered="{!if(TruePage==null,false,true)}" layout="none" id="detailpanel" style="z-index:-1;"> 
+                    <div  id="tabDivId" style="overflow: auto;z-index:-1;">
+                        <table  class="slds-table  slds-table_bordered" id="fixTable" style="z-index:-1;">
+                            <thead style="z-index:99;">
+                                <tr  class="slds-hint-parent" style="height:40px;background-color: #16325c !important;">
+                                    <apex:outputText value="{!tableYear}" escape="false"/>
+                                </tr>
+                                <tr class="slds-hint-parent" style="height:40px;background-color: #16325c !important;z-index:-1;">
+                                    <apex:outputText value="{!tableMonth}" escape="false"/>
+                                </tr>
+                            </thead>
+                            
+                            <tbody>
+                                <apex:repeat value="{!TruePage}" var="item">
+                                    <tr class="slds-hint-parent" style="z-index:10;">
+                                        <apex:outputText value="{!item.Koujikoumoku}" escape="false"/>
+                                        <apex:outputText value="{!item.syuuki}" escape="false"/>
+                                        <apex:repeat value="{!item.moneyList}" var="money">
+                                            <apex:outputText value="{!money}" escape="false"/>
+                                        </apex:repeat>
+                                    </tr>
+                                </apex:repeat>
+                            </tbody>     
+                        </table>
+                    </div>
+                <!--</div>-->
+            </apex:outputPanel>
+	         <!--<div style="margin-left:20px;margin-bottom:50px;" class="{!if(TruePage=null,'hide','')}">
+		            <apex:commandLink id="commandLink1" action="{!firstB}" rendered="true" value="最初へ" styleClass="linkBtn"/>
+					<apex:commandLink id="commandLink2" action="{!previousB}" rendered="true" value="前へ" styleClass="linkBtn"/>
+					<apex:commandLink id="commandLink3" action="{!nextB}" rendered="{!HasNextFlag}" value="次へ" styleClass="linkBtn"/>
+					<apex:commandLink id="commandLink4" action="{!lastB}" rendered="{!HasNextFlag}" value="最後へ" styleClass="linkBtn"/>
+			 </div>-->
+	        </div>
+	    <apex:actionFunction name="doSearch" action="{!doSearch}" rerender="frmId" oncomplete="doSize();openSuccessToast();"></apex:actionFunction>
+        </apex:form>
+    </body>
+    
+     <script type="text/javascript">
+       toastr.options = {
+      "closeButton": true,
+      "debug": false,
+      "newestOnTop": false,
+      "progressBar": false,
+      "positionClass": "toast-top-center",
+      "preventDuplicates": false,
+      "onclick": null,
+      "showDuration": "300",
+      "hideDuration": "1000",
+      "timeOut": "3000",
+      "extendedTimeOut": "1000",
+      "showEasing": "swing",
+      "hideEasing": "linear",
+      "showMethod": "fadeIn",
+      "hideMethod": "fadeOut"
+    }
+
+    var option = {
+        timeToHide:20000,
+        bgColor:"rgba(255,255,255,0.9)",
+        spinner:"spinner2"
+    }
+      function openLoading(){
+     $(".fakeloader").fakeLoader(option);
+     centerLoader();
+     $('.fakeloader').show();
+    }
+
+    function closeLoading(){
+        $(".fakeloader").fadeOut();
+    }
+    function centerLoader() {
+        var winW = $(window).width();
+        var winH = $(window).height();
+
+        var spinnerW = $('.fl').outerWidth();
+        var spinnerH = $('.fl').outerHeight();
+
+        $('.fl').css({
+            'position':'absolute',
+            'left':(winW/2)-(spinnerW/2),
+            'top':(winH/2)-(spinnerH/2)
+        });
+
+    }
+    function openSuccessToast(){
+
+        var $msg = $('.messageCell');
+        
+        if($msg.length && $msg.length > 0){
+            toastr["error"]("検索失敗");
+        }else{
+            toastr["success"]("検索完了", "message");
+        }
+        $(".fakeloader").fadeOut();
+        //$(".fakeloader").empty();
+    }
+     </script>
+</apex:page>

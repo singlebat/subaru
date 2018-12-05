@@ -1,0 +1,258 @@
+<apex:page standardController="CustomOpportunity__c"  extensions="ReportOutput"  docType="html-5.0" id="pgId"  sidebar="true">
+<!--<apex:page Controller="ReportOutput" docType="html-5.0" id="pgId" >-->
+  
+        <apex:stylesheet value="{!$Resource.jquery_mmenu_css}"/>
+        <apex:stylesheet value="{!$Resource.animate_css}"/>
+        <apex:styleSheet value="{!$Resource.status_slider_popup_css}"/>      
+
+        <script src="https://code.jquery.com/jquery-1.11.1.js"></script>         
+        <script src="{!URLFOR($Resource.jquery_mmenu_min_js)}"></script>
+        <script src="{!URLFOR($Resource.knob_js)}"></script>
+        <script src="{!URLFOR($Resource.jquery_layout_js)}"></script>
+        
+    <head>
+        <style>
+
+			/*タブ切り替え全体のスタイル*/
+			.tabs {
+			margin-top: 50px;
+			padding-bottom: 40px;
+			background-color: #fff;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+			width: 700px;
+			margin: 0 auto;}
+			/*タブのスタイル*/
+			.tab_item {
+			width: calc(100%/2);
+			height: 50px;
+			border-bottom: 3px solid #1797C0;
+			background-color: #d9d9d9;
+			line-height: 50px;
+			font-size: 16px;
+			text-align: center;
+			color: #565656;
+			display: block;
+			float: left;
+			text-align: center;
+			font-weight: bold;
+			transition: all 0.2s ease;
+			}
+			.tab_item:hover {
+			opacity: 0.75;
+			}
+			/*ラジオボタンを全て消す*/
+			input[name="tab_item"] {
+			display: none;
+			}
+			/*タブ切り替えの中身のスタイル*/
+			.tab_content {
+			display: none;
+			padding: 40px 40px 0;
+			clear: both;
+			overflow: hidden;
+			}
+			/*選択されているタブのコンテンツのみを表示*/
+			#all:checked ~ #all_content,
+			#programming:checked ~ #programming_content {
+			display: block;
+			}
+			/*選択されているタブのスタイルを変える*/
+			.tabs input:checked + .tab_item {
+			background-color: #1797C0;
+			color: #fff;
+			}
+			/*選択されてないタブのコンテンツのみを表示*/
+			#all:checked ~ #all_content,
+			#programming:checked ~ #programming_content {
+			display: block;
+			}
+			.hide{
+			display:none;
+			}
+        </style>
+    </head>
+<script type="text/javascript">
+      /*修繕周期表-->出力-*/
+      function RepairOut(){
+          if(window.confirm('修繕周期表を出力します。よろしいですか？')){
+              // 物件名
+              var propatyDisplay = document.getElementById('pgId:frmId:propatyDisplay');
+              if(propatyDisplay.value==null || propatyDisplay.value==''){
+                  alert('物件名を指定してください。 ');
+                  return;
+              }else{
+                  //  setTimeout('passToControlllerD()', 6000);
+                  // コントローラのメソッドを呼び出す
+                  passToControlllerD(propatyDisplay.value);
+                  // windowsでPDFプレビュー後、dowloadができる
+                  setTimeout(60000);
+              }
+
+            }else{
+                return;
+            }          
+      }
+     
+      /*事業収支表-->出力*/
+      function CauseOut(){ 
+          if(window.confirm('事業管理表を出力します。よろしいですか？')){                  
+              //var aa = document.getElementById('pgId:frmId:pgBlockId:programming'); 
+              // 事業部
+              var managingDepartment = document.getElementById('pgId:frmId:in');
+              // 実績年月(From)             
+              var FromDate = document.getElementById('pgId:frmId:FromDate');
+              // 実績年月(To)              
+              var ToDate = document.getElementById('pgId:frmId:ToDate');
+              
+              // 事業部の判定
+              if(managingDepartment.value=='all' || managingDepartment.value==''|| managingDepartment.value==null){
+                  alert('事業部を指定してください。 ');
+                  return;
+              }
+              //実績年月(From)       
+              if(FromDate.value=='all' || FromDate.value==''|| FromDate.value==null){
+                  alert('実績年月(From)を指定してください。 ');
+                  return;
+              }
+              // 実績年月(To)  
+              if(ToDate.value=='all' || ToDate.value==''|| ToDate.value==null){
+                  alert('実績年月(To)を指定してください。 ');
+                  return;
+              }
+              // 実績年月(From)と実績年月(To)の不正の判定
+              if(FromDate.value!=null && ToDate.value!=null && FromDate.value > ToDate.value ){
+                  alert('実績年月(From)と実績年月(To)を正しくご指定下さい。 ');
+                  return;
+              }
+               //年*12+月
+                var m1 = parseInt(FromDate.value.split("/")[1].replace(/^0+/, "")) + parseInt(FromDate.value.split("/")[0]) * 12;
+                var m2 = parseInt(ToDate.value.split("/")[1].replace(/^0+/, "")) + parseInt(ToDate.value.split("/")[0]) * 12;
+            	if(m2-m1>24){
+	                  alert('実績年月(From)実績年月(To)の間隔は最大で2年です、直してください。 ');
+	                  return;
+	            }
+              // コントローラのメソッドを呼び出す
+              passToControlllerB(managingDepartment.value);
+            }else{
+                return;
+            }
+      }
+     function chenckResult(){
+     	alert("該当するデータがありません。");
+     }
+      /*事業収支表-->キャンセル
+      function homeredirectB(){
+          // jsで直接呼び出す 
+          // ｸﾗｼｸのホームページに戻る
+          //document.location.href = "/home/home.jsp";
+          // Lightning のホームページに戻る
+          document.location.href = "/lightning/page/home";
+      }*/
+    /*事業収支表-->キャンセル*/
+    var processReturnedValue = function(valueReturned){
+        if(valueReturned != null && valueReturned !=''){
+            alert('Returned Value: ' + valueReturned);
+        }
+    };
+    /*年の指定を100年間、過去に拡張する例 
+    sfdcPage.onLoadQueue.push(function() {
+      var yearPicker = DatePicker.datePicker.yearPicker,
+          options = yearPicker.options;
+      value = +options[0].value;
+      for (var i = 1, len = 100; i <= len; i++) {
+        var o = document.createElement('option');
+        o.value = value - i;
+        o.text = value - i;
+        yearPicker.insertBefore(o, yearPicker.options[0]);
+      }
+    };*/
+</script>
+ <apex:form id="frmId">
+
+     <apex:actionFunction name="passToControlllerD" action="{!departmentOut}">
+         <!--<apex:param name="department" value="{!CustomOpportunity__c.PropatyDisplay__c}" assignTo="{!PropatyDisplay}"/>-->
+     </apex:actionFunction>
+
+     <apex:actionFunction name="passToControlllerB" action="{!businessUnitOut}" onComplete="chenckResult()">
+         <apex:param name="businessUnit" value="" assignTo="{!ManagingDepartment}"/>
+     </apex:actionFunction>
+
+
+        <div class="tabs">
+            <apex:outputText rendered="{!allChecked}">
+            	<input id="all" type="radio" name="tab_item" checked='checked'/>
+            	<label class="tab_item" for="all">修繕周期表出力</label>
+            </apex:outputText>
+            <apex:outputText rendered="{!!allChecked}">
+            	<input id="all" type="radio" name="tab_item" />
+            	<label class="tab_item" for="all">修繕周期表出力</label>
+            </apex:outputText>
+            
+            <!--<input id="programming" type="radio" name="tab_item" onclick="ClearMsg();"/>--> 
+            <apex:outputText rendered="{!allChecked}">
+            	<input id="programming" type="radio" name="tab_item" />
+            	<label class="tab_item" for="programming">事業管理表出力</label>
+            </apex:outputText>
+            <apex:outputText rendered="{!!allChecked}">
+            	<input id="programming" type="radio" name="tab_item" checked='checked'/>
+            	<label class="tab_item" for="programming">事業管理表出力</label>
+            </apex:outputText>
+            
+            <div class="tab_content" id="all_content">
+                <div class="tab_content_description">
+                    <div style="font-size: 18px;margin-top: 20px;">
+                        物件名:
+                        <apex:inputField id="propatyDisplay"  value="{!CustomOpportunity__c.PropatyDisplay__c}"  style="margin-left: 20px; width:300px;height:28px;"/>
+                    </div>
+                    <div style="font-size: 18px;margin-top: 20px;">
+                        <apex:commandbutton id="btn1" value="出力" onclick="RepairOut();" 
+                                            rerender="all" style="font-weight: bold;background:#1797C0;font-color:#ffffff; color: white !important;width:80px;"/> 
+                    
+                    </div>    
+                </div>
+            </div>
+            
+            <div class="tab_content" id="programming_content">
+                <div class="tab_content_description">
+                    <div>
+                        <div style="font-size: 18px;margin-top: 20px;">
+                            事業部
+                            <!-- リストのデータが表示されますが、画面更新されたら、クリアされない.-->
+                            <apex:selectList value="{!taisyous}" multiselect="false" size="1" style="margin-left: 122px; width:158px;height:28px;" id="in">
+                                <apex:selectOptions Value="{!kinds}"/>
+                            </apex:selectList>
+                        </div>
+                         <div style="font-size: 18px;margin-top: 20px;">
+                            物件区分
+                            <!-- リストのデータが表示されますが、画面更新されたら、クリアされない.-->
+                            <apex:selectList value="{!bukenKubun}" multiselect="false" size="1" style="margin-left: 105px; width:158px;height:28px;" id="kubun">
+                                <apex:selectOptions Value="{!bukens}"/>
+                            </apex:selectList>
+                        </div>
+                        <div style="font-size: 18px;margin-top: 20px;">
+                            実績年月(From)
+                            <apex:inputField id="FromDate" value="{!CustomOpportunity__c.Sdate__c}" style="margin-left: 56px; width:156px;height:22px;" />
+                        </div> 
+                        <div style="font-size: 18px;margin-top: 20px;"> 
+                            実績年月(To)
+                            <apex:inputField id="ToDate" value="{!CustomOpportunity__c.Edate__c}" style="margin-left: 76px; width:156px;height:22px;" />
+                        </div>
+                        <div style="color:red;font-size: 18px;margin-top: 20px;" class="{!if(resultMessage1==null,'hide','')}"> 
+                            {!resultMessage1}　
+                        </div>
+                        
+                        
+                        
+                        <div style="font-size: 18px;margin-top: 20px;">
+                            <!--<apex:pageBlockButtons >-->
+                            <apex:commandbutton id="btn2" value="出力"  onclick="CauseOut();" 
+                                                rerender="programming" style="font-weight: bold;background:#1797C0;font-color:#ffffff; color: white !important;width:80px;"/> 
+                           <!-- <apex:commandbutton value="キャンセル" onclick="homeredirectB()"  
+                                                rerender="programming" style="margin-left: 20px; font-weight: bold;background:#1797C0;font-color:#ffffff; color: white !important;"/> -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</apex:form>
+</apex:page>

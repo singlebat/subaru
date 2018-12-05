@@ -1,0 +1,111 @@
+<apex:page controller="ReportForJIGYOU" renderAs="PDF" standardStylesheets="false" applyHtmlTag="false" showHeader="false">
+    <head><!--
+            /*size: A3 landscape;  */-->
+        
+        <style>
+            @page {
+            	size:60.0cm 70.0cm;
+                margin-top: 0.1cm;
+                margin-left: 0.2cm;
+                margin-right: 0.2cm;
+                margin-bottom: 0.8cm;
+            }
+ 			.page-break{
+              page-break-before:always;
+              }
+             .page-break-after{
+                  page-break-after: always;
+            }
+            body {
+                font-family: Arial Unicode MS;
+                font-size: 14px;
+            }
+
+        </style>
+        <style type="text/css" media="print">
+            @page {
+                @bottom-center {
+                    content: element(footer);
+                }
+            }
+
+            div.footer {
+                display: block;
+                font-size: 11px;
+                padding: 2px;
+                position: running(footer);
+            }
+
+            .pagenumber:before {
+                content: counter(page);
+            }
+
+            .pagecount:before {
+                content: counter(pages);
+            }
+        </style>
+    </head>
+
+    <apex:variable var="Tcount" value="{!-1}"/>
+     <apex:variable var="pageIndex" value="{!1}"/>
+    <apex:repeat value="{!pages}" var="page">
+   
+    <div class="{!if(pageIndex != 1,'page-break','')}">
+    	<apex:variable var="Tcount" value="{!Tcount+1}"/>
+    	
+        <div style="height: 10px;"></div>
+        <div>
+        <div style="font-size:15px;margin-left:55cm;margin-top:0px;">{!printTime}</div>
+        <div style="font-size: 30px;">■施設別賃貸事業収支実績　{!Jigyou}　{!date1}{!IF(Or(date2=null,date1=null),"","～")}{!date2}</div>
+        </div>
+        <div style="height:63cm;">
+        <table  class="slds-table  slds-table_bordered"  style="width:1580px;margin-top:70px;">
+            <thead >
+                <tr>
+                    <td style="text-align:center;width: 200px;font: bold 24px;border-top: black solid 1px;
+                               border-left: black solid 1px;border-right: black solid 1px;border-bottom: black solid 0.5px;background-color: 	#DCDCDC;" rowspan="2">
+                        物件
+                    </td>
+                    <apex:repeat value="{!headerlist[Tcount].TheaderList1}" var="item">
+                        <apex:outputText value="{!item}" escape="false"/>
+                    </apex:repeat>
+                </tr>
+                <tr>
+					<apex:repeat value="{!headerlist[Tcount].TheaderList2}" var="item">
+                        <apex:outputText value="{!item}" escape="false"/>
+                    </apex:repeat>                    
+                </tr>
+                <tr>
+                    <td  style="background-color: 	#DCDCDC;width: 80px;text-align:left;border-top: black solid 0.5px;border-left: black solid 0.5px;border-right: black solid 0.5px;border-bottom: black solid 0.5px;">
+                        築年数</td>
+                    <apex:repeat value="{!headerlist[Tcount].TheaderList3}" var="item">
+                        <apex:outputText value="{!item}" escape="false"/>
+                    </apex:repeat>     
+                </tr>
+                
+            </thead>
+            <tr><td style="width: 80px;text-align:left;border-top: black solid 1px;border-left: black solid 0.5px;border-right: black solid 0.5px;border-bottom: black solid 0.5px;background-color:#B4C6E7">差額（売上-管理-工事）</td>
+            	<apex:repeat value="{!headerlist[Tcount].soriList}" var="sori">
+            		<apex:outputText value="{!sori}" escape="false"/>
+            	</apex:repeat>
+            </tr>
+            <tbody>
+ 					<apex:repeat value="{!page}" var="item"> 
+ 						<tr>
+ 							<apex:outputText value="{!item.TLeftrowList}" escape="false"/>
+ 							<apex:outputText value="{!item.TRightrowList}" escape="false"/>
+ 						</tr>
+                    </apex:repeat>   
+            </tbody>
+        </table>
+      	</div>
+      	
+      </div>
+      	<div style="position:relative;margin-left:57cm;font-size:20px;top:10px;">
+	            	{!pageIndex}/{!pages.size}
+       	</div>
+	   <apex:variable var="pageIndex" value="{!pageIndex+1}"/>
+    </apex:repeat>
+     
+
+</apex:page>
